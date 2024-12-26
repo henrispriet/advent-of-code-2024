@@ -4,6 +4,7 @@ struct InputData {
     locks: Vec<Lock>,
 }
 
+const FULL_CHAR: u8 = b'#';
 const PINS: usize = 5;
 const HEIGHT: u8 = 6;
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -17,7 +18,7 @@ fn parse_it(input: &str) -> InputData {
             .next()
             .expect("key/lock should have at least one line")
             .bytes()
-            .all(|c| c == b'#')
+            .all(|c| c == FULL_CHAR)
     });
 
     let keys = keys
@@ -39,7 +40,7 @@ fn count_pin_lens<'a>(mut lines: impl Iterator<Item = &'a str>) -> [u8; PINS] {
 
     lines.fold([0; PINS], |mut acc, x| {
         for (i, y) in x[..PINS].bytes().enumerate() {
-            if y == b'#' {
+            if y == FULL_CHAR {
                 acc[i] += 1
             }
         }
