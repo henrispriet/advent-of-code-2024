@@ -8,5 +8,6 @@ pkgs.mkShell {
 		clippy
 		rustfmt
 		rust-analyzer
+		cargo-flamegraph
 	];
 }
