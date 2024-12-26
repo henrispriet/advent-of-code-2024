@@ -98,12 +98,11 @@ mod test {
         assert_eq!(result, 3);
     }
 
-    #[ignore = "small not done"]
     #[test]
     fn part1() {
         let input = include_str!("puzzle_input.txt");
         let result = do_it(input);
-        assert_eq!(result, todo!());
+        assert_eq!(result, 3483);
     }
 
     const INPUT_SMALL: &'static str = "#####
