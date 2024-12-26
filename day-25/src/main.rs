@@ -5,6 +5,7 @@ struct InputData {
 }
 
 const PINS: usize = 5;
+const HEIGHT: u8 = 6;
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 struct Key([u8; PINS]);
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -46,8 +47,19 @@ fn count_pin_lens<'a>(mut lines: impl Iterator<Item = &'a str>) -> [u8; PINS] {
     })
 }
 
-fn solve_it(input: InputData) -> u64 {
-    todo!()
+fn solve_it(InputData { keys, locks }: InputData) -> u64 {
+    // naive: cartesian product
+    let mut fits = 0;
+
+    for Key(k) in &keys {
+        for Lock(l) in &locks {
+            if std::iter::zip(k, l).all(|(k, l)| k + l < HEIGHT) {
+                fits += 1;
+            }
+        }
+    }
+
+    fits
 }
 
 fn do_it(input: &str) -> u64 {
@@ -80,7 +92,6 @@ mod test {
         );
     }
 
-    #[ignore = "parsing not done"]
     #[test]
     fn small() {
         let result = do_it(INPUT_SMALL);
