@@ -6,4 +6,4 @@ pub mod day2;
 // I'll comment this out for now and make the other days in order first.
 // pub mod day25;
 
-aoc_lib!{ year = 2024 }
+aoc_lib! { year = 2024 }
