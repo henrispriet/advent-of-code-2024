@@ -66,3 +66,53 @@ fn solve_it(InputData { keys, locks }: &InputData) -> u64 {
 
     fits
 }
+
+#[test]
+fn test_example() {
+  let input = EXAMPLE_INPUT;
+  let parsed = parse_it(input);
+  let result = solve_it(&parsed);
+
+  assert_eq!(result, 3);
+}
+
+#[cfg(test)]
+const EXAMPLE_INPUT: &str = "#####
+.####
+.####
+.####
+.#.#.
+.#...
+.....
+
+#####
+##.##
+.#.##
+...##
+...#.
+...#.
+.....
+
+.....
+#....
+#....
+#...#
+#.#.#
+#.###
+#####
+
+.....
+.....
+#.#..
+###..
+###.#
+###.#
+#####
+
+.....
+.....
+.....
+#....
+#.#..
+#.#.#
+#####";
