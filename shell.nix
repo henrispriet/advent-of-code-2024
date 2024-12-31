@@ -9,5 +9,6 @@ pkgs.mkShell {
 		rustfmt
 		rust-analyzer
 		cargo-flamegraph
+		cargo-aoc
 	];
 }
