@@ -1,4 +1,5 @@
 use aoc_runner_derive::aoc;
+// TODO: could use ndarray here
 
 struct InputData<'a> {
     grid: Vec<&'a [u8]>,
@@ -17,7 +18,7 @@ fn parse_it(input: &str) -> InputData<'_> {
 // couldn't figure out the trait bounds, so here's a macro instead
 macro_rules! cartesian {
     ($left: expr, $right: expr) => {
-        $left
+        ($left)
             .into_iter()
             .flat_map(|l| std::iter::repeat(l).zip($right))
     };
@@ -56,7 +57,23 @@ fn offset(base: usize, offset: isize, multiplier: usize) -> usize {
 #[aoc(day4, part2)]
 fn solve_part2(input: &str) -> usize {
     let InputData { grid } = parse_it(input);
-    todo!();
+    cartesian!(0..grid.len() - 2, 0..grid[0].len() - 2)
+        .filter(|&(i, j)| {
+            x_mas(&[
+                &grid[i][j..j + 3],
+                &grid[i + 1][j..j + 3],
+                &grid[i + 2][j..j + 3],
+            ])
+        })
+        .count()
+}
+
+fn x_mas(kernel: &[&[u8]]) -> bool {
+    kernel[1][1] == b'A'
+        && ((kernel[0][0] == b'M' && kernel[2][2] == b'S')
+            || (kernel[0][0] == b'S' && kernel[2][2] == b'M'))
+        && ((kernel[2][0] == b'M' && kernel[0][2] == b'S')
+            || (kernel[2][0] == b'S' && kernel[0][2] == b'M'))
 }
 
 #[test]
@@ -67,13 +84,12 @@ fn example_part1() {
     assert_eq!(result, 18);
 }
 
-#[ignore = "todo"]
 #[test]
 fn example_part2() {
     let input = EXAMPLE_INPUT;
     let result = solve_part2(input);
 
-    assert_eq!(result, todo!());
+    assert_eq!(result, 9);
 }
 
 #[cfg(test)]
