@@ -1,19 +1,54 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
-struct InputData {}
+struct InputData {
+    rules: Vec<Rule>,
+    updates: Vec<Update>,
+}
+
+type PageNum = u32;
+struct Rule {
+    before: PageNum,
+    after: PageNum,
+}
+struct Update(Vec<PageNum>);
 
 #[aoc_generator(day5)]
 fn parse_it(input: &str) -> InputData {
-    todo!();
+    let (rules, updates) = input
+        .split_once("\n\n")
+        .expect("input should consist of rules and updates");
+
+    let rules = rules
+        .lines()
+        .map(|line| {
+            let (before, after) = line.split_once('|').expect("rules should be split by '|'");
+            let before = before.parse().expect("before should be an integer");
+            let after = after.parse().expect("after should be an integer");
+            Rule { before, after }
+        })
+        .collect();
+
+    let updates = updates
+        .lines()
+        .map(|line| {
+            line.split(',')
+                .map(str::parse)
+                .collect::<Result<_, _>>()
+                .map(Update)
+                .expect("updates should be integers")
+        })
+        .collect();
+
+    InputData { rules, updates }
 }
 
 #[aoc(day5, part1)]
-fn solve_part1(input: &InputData) -> u32 {
+fn solve_part1(input: &InputData) -> usize {
     todo!();
 }
 
 #[aoc(day5, part2)]
-fn solve_part2(input: &InputData) -> u32 {
+fn solve_part2(input: &InputData) -> usize {
     todo!();
 }
 
