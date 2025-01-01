@@ -1,15 +1,30 @@
 use aoc_runner_derive::{aoc, aoc_generator};
+use regex::Regex;
 
-struct InputData {}
+struct InputData {
+    ops: Vec<Mul>,
+}
+
+struct Mul(u32, u32);
 
 #[aoc_generator(day3)]
 fn parse_it(input: &str) -> InputData {
-    todo!();
+    let re = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
+    let ops = re
+        .captures_iter(input)
+        .map(|c| {
+            let (_, [x, y]) = c.extract();
+            let x = str::parse(x).expect("x should be an integer");
+            let y = str::parse(y).expect("x should be an integer");
+            Mul(x, y)
+        })
+        .collect();
+    InputData { ops }
 }
 
 #[aoc(day3, part1)]
-fn solve_part1(input: &InputData) -> u32 {
-    todo!();
+fn solve_part1(InputData { ops }: &InputData) -> u32 {
+    ops.iter().map(|&Mul(a, b)| a * b).sum()
 }
 
 #[aoc(day3, part2)]
@@ -23,7 +38,7 @@ fn example_part1() {
     let parsed = parse_it(input);
     let result = solve_part1(&parsed);
 
-    assert_eq!(result, todo!());
+    assert_eq!(result, 161);
 }
 
 #[ignore = "todo"]
