@@ -1,5 +1,3 @@
-use std::ops::ControlFlow;
-
 use aoc_runner_derive::{aoc, aoc_generator};
 
 struct InputData {
@@ -24,19 +22,33 @@ fn parse_it(input: &str) -> InputData {
 fn solve_part1(InputData { sequences }: &InputData) -> usize {
     sequences
         .iter()
-        .filter(|seq| {
-            let sign = (seq[1] - seq[0]).signum();
-            seq.windows(2).all(|x| {
-                let diff = x[1] - x[0];
-                diff.signum() == sign && (1..=3).contains(&diff.abs())
-            })
-        })
+        // why is `.filter(is_valid)` not allowed here?
+        .filter(|seq| is_valid(seq))
         .count()
 }
 
+fn is_valid(seq: &[i32]) -> bool {
+    let sign = (seq[1] - seq[0]).signum();
+    seq.windows(2).all(|x| {
+        let diff = x[1] - x[0];
+        diff.signum() == sign && (1..=3).contains(&diff.abs())
+    })
+}
+
 #[aoc(day2, part2)]
-fn solve_part2(input: &InputData) -> u32 {
-    todo!();
+fn solve_part2(InputData { sequences }: &InputData) -> usize {
+    sequences
+        .iter()
+        .filter(|seq| {
+            is_valid(seq)
+                || (0..seq.len()).any(|i| {
+                    // why is `seq.clone()` not allowed here?
+                    let mut new_seq = Vec::clone(seq);
+                    new_seq.remove(i);
+                    is_valid(&new_seq)
+                })
+        })
+        .count()
 }
 
 #[test]
@@ -48,14 +60,13 @@ fn example_part1() {
     assert_eq!(result, 2);
 }
 
-#[ignore = "todo"]
 #[test]
 fn example_part2() {
     let input = EXAMPLE_INPUT;
     let parsed = parse_it(input);
     let result = solve_part2(&parsed);
 
-    assert_eq!(result, todo!());
+    assert_eq!(result, 4);
 }
 
 #[cfg(test)]
