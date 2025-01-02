@@ -6,10 +6,12 @@ struct InputData {
 }
 
 type PageNum = u32;
+#[derive(Debug)]
 struct Rule {
     before: PageNum,
     after: PageNum,
 }
+#[derive(Debug)]
 struct Update(Vec<PageNum>);
 
 #[aoc_generator(day5)]
@@ -42,9 +44,30 @@ fn parse_it(input: &str) -> InputData {
     InputData { rules, updates }
 }
 
+// TODO: alt solution: make rules into directed graph, then for each update:
+//  1. for each number in update
+//  2. if >= 1 child already marked => return false
+//  3. mark number in the rules graph
+//  4. goto 1
 #[aoc(day5, part1)]
-fn solve_part1(input: &InputData) -> usize {
-    todo!();
+fn solve_part1(InputData { rules, updates }: &InputData) -> u32 {
+    // check all rules on all updates
+    updates
+        .iter()
+        .filter(|&upd| {
+            rules.iter().all(|Rule { before, after }| {
+                match (
+                    upd.0.iter().position(|n| n == before),
+                    upd.0.iter().position(|n| n == after),
+                ) {
+                    (Some(bef), Some(aft)) if bef < aft => true,
+                    (_, None) | (None, _) => true,
+                    _ => false,
+                }
+            })
+        })
+        .map(|Update(upd)| upd[upd.len() / 2])
+        .sum()
 }
 
 #[aoc(day5, part2)]
@@ -58,7 +81,7 @@ fn example_part1() {
     let parsed = parse_it(input);
     let result = solve_part1(&parsed);
 
-    assert_eq!(result, todo!());
+    assert_eq!(result, 143);
 }
 
 #[ignore = "todo"]
