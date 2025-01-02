@@ -1,16 +1,12 @@
 use aoc_runner_derive::{aoc, aoc_generator};
+use std::collections::{HashMap, HashSet};
 
 struct InputData {
-    rules: Vec<Rule>,
+    rules: HashMap<u32, Vec<u32>>,
     updates: Vec<Update>,
 }
 
 type PageNum = u32;
-#[derive(Debug)]
-struct Rule {
-    before: PageNum,
-    after: PageNum,
-}
 #[derive(Debug)]
 struct Update(Vec<PageNum>);
 
@@ -26,9 +22,20 @@ fn parse_it(input: &str) -> InputData {
             let (before, after) = line.split_once('|').expect("rules should be split by '|'");
             let before = before.parse().expect("before should be an integer");
             let after = after.parse().expect("after should be an integer");
-            Rule { before, after }
+            (before, after)
         })
-        .collect();
+        .fold(
+            HashMap::new(),
+            |mut acc: HashMap<u32, Vec<u32>>, (before, after)| {
+                match acc.get_mut(&before) {
+                    Some(vec) => vec.push(after),
+                    None => {
+                        acc.insert(before, vec![after]);
+                    }
+                }
+                acc
+            },
+        );
 
     let updates = updates
         .lines()
@@ -44,26 +51,18 @@ fn parse_it(input: &str) -> InputData {
     InputData { rules, updates }
 }
 
-// TODO: alt solution: make rules into directed graph, then for each update:
-//  1. for each number in update
-//  2. if >= 1 child already marked => return false
-//  3. mark number in the rules graph
-//  4. goto 1
 #[aoc(day5, part1)]
-fn solve_part1(InputData { rules, updates }: &InputData) -> u32 {
-    // check all rules on all updates
+fn solve_part1(InputData { rules, updates }: &InputData) -> PageNum {
     updates
         .iter()
         .filter(|&upd| {
-            rules.iter().all(|Rule { before, after }| {
-                match (
-                    upd.0.iter().position(|n| n == before),
-                    upd.0.iter().position(|n| n == after),
-                ) {
-                    (Some(bef), Some(aft)) if bef < aft => true,
-                    (_, None) | (None, _) => true,
-                    _ => false,
-                }
+            let mut marked = HashSet::new();
+            upd.0.iter().all(|page| {
+                marked.insert(*page);
+                rules
+                    .get(page)
+                    .map(|children| !children.iter().any(|child| marked.contains(child)))
+                    .unwrap_or(true)
             })
         })
         .map(|Update(upd)| upd[upd.len() / 2])
