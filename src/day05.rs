@@ -1,12 +1,14 @@
 use aoc_runner_derive::{aoc, aoc_generator};
-use std::collections::{HashMap, HashSet};
+use std::cmp::Ordering;
+use std::collections::HashMap;
 
 struct InputData {
-    rules: HashMap<u32, Vec<u32>>,
+    rules: Rules,
     updates: Vec<Update>,
 }
 
 type PageNum = u32;
+type Rules = HashMap<u32, Vec<u32>>;
 #[derive(Debug)]
 struct Update(Vec<PageNum>);
 
@@ -24,18 +26,15 @@ fn parse_it(input: &str) -> InputData {
             let after = after.parse().expect("after should be an integer");
             (before, after)
         })
-        .fold(
-            HashMap::new(),
-            |mut acc: HashMap<u32, Vec<u32>>, (before, after)| {
-                match acc.get_mut(&before) {
-                    Some(vec) => vec.push(after),
-                    None => {
-                        acc.insert(before, vec![after]);
-                    }
+        .fold(Rules::new(), |mut acc: Rules, (before, after)| {
+            match acc.get_mut(&before) {
+                Some(vec) => vec.push(after),
+                None => {
+                    acc.insert(before, vec![after]);
                 }
-                acc
-            },
-        );
+            }
+            acc
+        });
 
     let updates = updates
         .lines()
@@ -55,23 +54,40 @@ fn parse_it(input: &str) -> InputData {
 fn solve_part1(InputData { rules, updates }: &InputData) -> PageNum {
     updates
         .iter()
-        .filter(|&upd| {
-            let mut marked = HashSet::new();
-            upd.0.iter().all(|page| {
-                marked.insert(*page);
-                rules
-                    .get(page)
-                    .map(|children| !children.iter().any(|child| marked.contains(child)))
-                    .unwrap_or(true)
-            })
+        .filter(|Update(upd)| {
+            // NOTE: for some godforsaken reason is_sorted_by takes a functions that returns a bool instead of a std::cmp::Ordering
+            upd.is_sorted_by(|&a, &b| cmp_pages(a, b, rules).is_le())
         })
         .map(|Update(upd)| upd[upd.len() / 2])
         .sum()
 }
 
+fn cmp_pages(first: PageNum, other: PageNum, rules: &Rules) -> Ordering {
+    match (rules.get(&first), rules.get(&other)) {
+        (Some(cs), Some(co)) if co.contains(&first) && cs.contains(&other) => {
+            unreachable!()
+        }
+        (_, Some(co)) if co.contains(&first) => Ordering::Greater,
+        (Some(cs), _) if cs.contains(&other) => Ordering::Less,
+        _ => unreachable!(),
+    }
+}
+
 #[aoc(day5, part2)]
-fn solve_part2(input: &InputData) -> usize {
-    todo!();
+fn solve_part2(InputData { rules, updates }: &InputData) -> PageNum {
+    updates
+        .iter()
+        .filter(|Update(upd)| {
+            // NOTE: for some godforsaken reason is_sorted_by takes a functions that returns a bool instead of a std::cmp::Ordering
+            !upd.is_sorted_by(|&a, &b| cmp_pages(a, b, rules).is_le())
+        })
+        .map(|Update(upd)| {
+            let mut upd = upd.clone();
+            upd.sort_by(|&a, &b| cmp_pages(a, b, rules));
+            upd
+        })
+        .map(|upd| upd[upd.len() / 2])
+        .sum()
 }
 
 #[test]
@@ -83,14 +99,13 @@ fn example_part1() {
     assert_eq!(result, 143);
 }
 
-#[ignore = "todo"]
 #[test]
 fn example_part2() {
     let input = EXAMPLE_INPUT;
     let parsed = parse_it(input);
     let result = solve_part2(&parsed);
 
-    assert_eq!(result, todo!());
+    assert_eq!(result, 123);
 }
 
 #[cfg(test)]
