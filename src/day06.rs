@@ -88,7 +88,6 @@ struct GridWalker<'a, 'b> {
     pos: Pos,
     facing: Direction,
     grid: &'b Grid<'a>,
-    seen: SeenGrid,
 }
 
 #[derive(Debug)]
@@ -132,18 +131,14 @@ where
     'b: 'a,
 {
     fn new(grid: &'b Grid<'a>, start_pos: Pos) -> Self {
-        let seen = SeenGrid::new(grid);
         Self {
             pos: start_pos,
             grid,
             facing: Direction::default(),
-            seen,
         }
     }
 
-    fn walk(&mut self) -> Option<()> {
-        dbg!(&self.pos);
-        self.seen[self.pos] = true;
+    fn walk(&mut self) -> Option<Pos> {
         let mut next_pos;
         loop {
             next_pos = self.pos + self.facing;
@@ -157,16 +152,20 @@ where
             }
         }
         self.pos = next_pos;
-        Some(())
+        Some(self.pos)
     }
 }
 
 #[aoc(day6, part1)]
 fn solve_part1(input: &str) -> usize {
     let InputData { grid, start_pos } = parse_it(input);
+    let mut seen = SeenGrid::new(&grid);
+    seen[start_pos] = true;
     let mut walker = GridWalker::new(&grid, start_pos);
-    for () in std::iter::from_fn(|| walker.walk()) {}
-    walker.seen.count()
+    for pos in std::iter::from_fn(|| walker.walk()) {
+        seen[pos] = true;
+    }
+    seen.count()
 }
 
 #[aoc(day6, part2)]
@@ -183,13 +182,12 @@ fn example_part1() {
     assert_eq!(result, 41);
 }
 
-#[ignore = "todo"]
 #[test]
 fn example_part2() {
     let input = EXAMPLE_INPUT;
     let result = solve_part2(input);
 
-    assert_eq!(result, todo!());
+    assert_eq!(result, 6);
 }
 
 #[cfg(test)]
